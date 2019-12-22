@@ -5,9 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
@@ -45,5 +43,20 @@ public class DaoRepository {
             cmsPage.setPageName("2");
             cmsPageRepository.save(cmsPage);
         }
+    }
+
+    //查询根据条件查询
+    @Test
+    public void testFindAllByExample(){
+        //pageable 分页条件
+        int page =0 ;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page,size);
+        CmsPage cmsPage = new CmsPage();
+        cmsPage.setPageName("inde");
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching().withMatcher("pageName",ExampleMatcher.GenericPropertyMatchers.contains());
+        Example<CmsPage> example = Example.of(cmsPage,exampleMatcher);
+        Page<CmsPage> lists = cmsPageRepository.findAll(example,pageable);
+        System.out.println(lists);
     }
 }
