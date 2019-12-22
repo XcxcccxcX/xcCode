@@ -2,7 +2,9 @@ package com.xuecheng.manage_cms.service;
 
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
+import com.xuecheng.framework.domain.cms.response.CmsCode;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
+import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.QueryResult;
@@ -70,17 +72,18 @@ public class CmsPageService {
 
     //添加Cms 页面
     public CmsPageResult addCmsPage(CmsPage cmsPage) {
-        if (cmsPage!=null){
+        if (cmsPage==null){
+            ExceptionCast.cast(CommonCode.INVALID_PARAM);
+        }
             CmsPage cmsPage1 = cmsPageRepository.findByPageNameAndPageWebPathAndSiteId(cmsPage.getPageName(),cmsPage.getPageWebPath(),cmsPage.getSiteId());
-            if (cmsPage1==null){
+            //异常捕获
+            if (cmsPage1!=null){
+                ExceptionCast.cast(CmsCode.CMS_ADDPAGE_EXISTSNAME);
+            }
                 cmsPage.setPageId(null);
                 cmsPageRepository.save(cmsPage);
                 return new CmsPageResult(CommonCode.SUCCESS,cmsPage);
-            }
-            return new CmsPageResult(CommonCode.FAIL,null);
         }
-        return new CmsPageResult(CommonCode.FAIL,null);
-    }
 
     //根据id 查询页面
     public CmsPage findById(String id){
