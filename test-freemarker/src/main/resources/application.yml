@@ -1,0 +1,10 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: test-freemarker
+  freemarker:
+    cache: false  # 关闭缓存
+    settings:
+      template_update_delay: 0
