@@ -12,7 +12,7 @@ import java.util.concurrent.TimeoutException;
  * @author: huiyishe
  * @Date: 2019-12-24 17:35
  */
-public class Producer03_topic {
+public class Producer04_topic {
     private static final String QUEUE_INFORM_EMAIL = "queue_inform_email";
     private static final String QUEUE_INFORM_SMS = "queue_inform_sms";
     private static final String EXCHANGE_TOPICS_INFORM="exchange_topics_inform";
