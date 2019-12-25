@@ -56,15 +56,16 @@ public class PageService {
         CmsSite cmsSite = this.findCmsSiteBySiteId(cmsPage.getSiteId());
         String sitePhysicalPath = cmsSite.getSitePhysicalPath();
         //页面的物理路径
+        String dirpath = sitePhysicalPath + cmsPage.getPagePhysicalPath();
         String pagePath = sitePhysicalPath + cmsPage.getPagePhysicalPath() + cmsPage.getPageName();
-        File f  = new File(pagePath);
-        if (!f.exists()){
-            f.mkdir();
+        File dirFile = new File(dirpath);
+        if (!dirFile.exists()){
+            dirFile.mkdirs();
         }
         //将html 文件保存到服务器物理路径上
         FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(pagePath);
+            fileOutputStream = new FileOutputStream(new File(pagePath));
             IOUtils.copy(inputStream,fileOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
