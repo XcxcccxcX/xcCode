@@ -1,12 +1,19 @@
 package com.xuecheng.manage_course.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
+import com.xuecheng.framework.domain.course.request.CourseListRequest;
 import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
+import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.model.response.QueryResult;
 import com.xuecheng.framework.model.response.ResponseResult;
 import com.xuecheng.manage_course.dao.CourseBaseRepository;
+import com.xuecheng.manage_course.dao.CourseMapper;
 import com.xuecheng.manage_course.dao.TeachplanMapper;
 import com.xuecheng.manage_course.dao.TeachplanRepository;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +37,8 @@ public class CourseService {
     TeachplanRepository teachplanRepository;
     @Autowired
     CourseBaseRepository courseBaseRepository;
+    @Autowired
+    CourseMapper courseMapper;
 
     public TeachplanNode findTeachplanList(String courseId){
         return teachplanMapper.selectList(courseId);
@@ -89,5 +98,15 @@ public class CourseService {
             return teachplan.getId();
         }
         return teachplans.get(0).getId();
+    }
+
+    //查询我的课程列表
+    public QueryResponseResult findCourseList(int page, int size, CourseListRequest courseListRequest){
+        PageHelper.startPage(page,size);
+        Page<CourseInfo> courseInfos = courseMapper.findMyCourseList();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setTotal(courseInfos.getTotal());
+        queryResult.setList(courseInfos.getResult());
+        return new QueryResponseResult(CommonCode.SUCCESS,queryResult);
     }
 }

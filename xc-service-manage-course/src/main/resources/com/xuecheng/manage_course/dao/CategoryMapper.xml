@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuecheng.manage_course.dao.CategoryMapper">
+
+    <resultMap id="categoryMap" type="com.xuecheng.framework.domain.course.ext.CategoryNode">
+        <id column="one_name" property="name"></id>
+        <result column="one_id" property="id"></result>
+        <result column="one_label" property="label"></result>
+        <collection property="children" ofType="com.xuecheng.framework.domain.course.ext.CategoryNode">
+            <id column="two_name" property="name"></id>
+            <result column="two_id" property="id"></result>
+            <result column="two_label" property="label"></result>
+            <collection property="children" ofType="com.xuecheng.framework.domain.course.ext.CategoryNode">
+                <id column="three_name" property="name"></id>
+                <result column="three_id" property="id"></result>
+                <result column="three_label" property="label"></result>
+            </collection>
+        </collection>
+     </resultMap>
+    
+    <select id="findCategory"
+            resultMap="categoryMap">
+        SELECT
+            a.NAME AS one_name,
+            a.label AS one_label,
+            a.id AS one_id,
+            b.NAME AS two_name,
+            b.label AS two_label,
+            b.id AS two_id,
+            c.NAME AS three_name,
+            c.label AS three_label,
+            c.id AS three_id
+        FROM
+            category a
+            RIGHT JOIN category b ON a.id = b.parentid
+            RIGHT JOIN category c ON b.id = c.parentid
+        WHERE
+            a.parentid = 0
+    </select>
+</mapper>
