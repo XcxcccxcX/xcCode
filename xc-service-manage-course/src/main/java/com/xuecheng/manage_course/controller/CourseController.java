@@ -1,6 +1,8 @@
 package com.xuecheng.manage_course.controller;
 
 import com.xuecheng.api.course.CourseControllerApi;
+import com.xuecheng.framework.domain.course.CourseBase;
+import com.xuecheng.framework.domain.course.CourseMarket;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
@@ -39,4 +41,35 @@ public class CourseController implements CourseControllerApi {
     public QueryResponseResult findCourseList(@PathVariable("page") int page,@PathVariable("size") int size, CourseListRequest courseListRequest) {
         return courseService.findCourseList(page,size,courseListRequest);
     }
+
+    @Override
+    @PostMapping("/coursebase/add")
+    public ResponseResult courseBaseAdd(@RequestBody CourseBase courseBase) {
+        return courseService.courseBaseAdd(courseBase);
+    }
+
+    @Override
+    @GetMapping("/coursebase/get/{courseBaseId}")
+    public CourseBase getCourseBaseById(@PathVariable("courseBaseId") String courseBaseId) {
+        return courseService.getCourseBaseById(courseBaseId);
+    }
+
+    @Override
+    @PostMapping("/coursebase/update/{courseId}")
+    public ResponseResult updateCourseBaseById(@PathVariable("courseId") String courseid, @RequestBody CourseBase courseBase) {
+        return courseService.updateCourseBaseById(courseid,courseBase);
+    }
+
+    @Override
+    @GetMapping("/coursemarket/get/{courseid}")
+    public CourseMarket getCourseMarketById(@PathVariable("courseid") String courseId) {
+        return courseService.getCourseMarketById(courseId);
+    }
+
+    @Override
+    @PostMapping("/coursemarket/update/{courseId}")
+    public ResponseResult updateCourseMarket(@PathVariable("courseId") String courseid, @RequestBody CourseMarket courseMarket) {
+        return courseService.updateCourseMarket(courseid,courseMarket);
+    }
+
 }
