@@ -1,0 +1,10 @@
+server:
+  port: 26000
+spring:
+  application:
+    name: test-OSS
+xc:
+  endpoint: oss-cn-hangzhou.aliyuncs.com
+  accessKeyId: LTAI4FebEkMF5Vu2gCTQ3U2F
+  accessKeySecret: dbR32wf55B8rbhhGvyBIFdONsFOe6X
+  bucketName: xc-code

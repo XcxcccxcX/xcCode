@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.CourseMarket;
+import com.xuecheng.framework.domain.course.CoursePic;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
@@ -45,6 +46,8 @@ public class CourseService {
     CourseMapper courseMapper;
     @Autowired
     CourseMarketRepository courseMarketRepository;
+    @Autowired
+    CoursePicRepository coursePicRepository;
 
     public TeachplanNode findTeachplanList(String courseId){
         return teachplanMapper.selectList(courseId);
@@ -230,5 +233,38 @@ public class CourseService {
             courseMarketRepository.save(courseMarket1);
         }
         return new ResponseResult(CommonCode.SUCCESS);
+    }
+
+    public ResponseResult addCoursePic(String courseId, String pic) {
+        if (StringUtils.isEmpty(courseId) || courseId == "" ||
+        StringUtils.isEmpty(pic) || pic == ""){
+            ExceptionCast.cast(CommonCode.INVALID_PARAM);
+        }
+        CoursePic coursePic = null;
+        Optional<CoursePic> optionalCoursePic = coursePicRepository.findById(courseId);
+        if (optionalCoursePic.isPresent()){
+            coursePic = optionalCoursePic.get();
+        }
+        if (coursePic == null){
+            coursePic = new CoursePic();
+        }
+        coursePic.setCourseid(courseId);
+        coursePic.setPic(pic);
+        coursePicRepository.save(coursePic);
+        return new ResponseResult(CommonCode.SUCCESS);
+    }
+
+    /**
+     * 查询课程图片
+     * @param courseId
+     * @return
+     */
+    public CoursePic findCoursePicByCourseId(String courseId) {
+        Optional<CoursePic> optionalCoursePic = coursePicRepository.findById(courseId);
+        if (optionalCoursePic.isPresent()){
+            CoursePic coursePic = optionalCoursePic.get();
+            return coursePic;
+        }
+        return null;
     }
 }

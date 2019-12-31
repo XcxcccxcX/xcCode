@@ -3,6 +3,7 @@ package com.xuecheng.manage_course.controller;
 import com.xuecheng.api.course.CourseControllerApi;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.CourseMarket;
+import com.xuecheng.framework.domain.course.CoursePic;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
@@ -72,4 +73,15 @@ public class CourseController implements CourseControllerApi {
         return courseService.updateCourseMarket(courseid,courseMarket);
     }
 
+    @Override
+    @PostMapping("/coursePic/add")
+    public ResponseResult saveCoursePic(@RequestParam("courseId") String courseId, @RequestParam("pic") String pic) {
+        return courseService.addCoursePic(courseId,pic);
+    }
+
+    @Override
+    @GetMapping("/coursePic/list/{courseId}")
+    public CoursePic findPicByCourseId(@PathVariable("courseId") String courseId) {
+        return courseService.findCoursePicByCourseId(courseId);
+    }
 }
