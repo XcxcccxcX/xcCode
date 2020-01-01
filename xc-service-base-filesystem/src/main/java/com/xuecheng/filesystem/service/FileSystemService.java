@@ -62,6 +62,7 @@ public class FileSystemService {
             ExceptionCast.cast(CommonCode.UPLOAD_FILE_ERROR);
             LOGGER.error("上传文件失败 文件name:{}",multipartFile.getOriginalFilename());
         }
+        
         FileSystem fileSystem = new FileSystem();
         fileSystem.setFileId(url);
         fileSystem.setFilePath(url);
