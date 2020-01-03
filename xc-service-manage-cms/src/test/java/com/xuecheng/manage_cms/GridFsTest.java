@@ -38,10 +38,10 @@ public class GridFsTest {
     @Test
     public void testGridFs() throws FileNotFoundException {
         //定义file
-        File file = new File("d:/index_banner.ftl");
+        File file = new File("d:/course.ftl");
         //D定义fileInputStream
         FileInputStream fileInputStream = new FileInputStream(file);
-        ObjectId objectId = gridFsTemplate.store(fileInputStream, "index_banner.ftl");
+        ObjectId objectId = gridFsTemplate.store(fileInputStream, "course.ftl");
         System.out.println(objectId);
     }
 

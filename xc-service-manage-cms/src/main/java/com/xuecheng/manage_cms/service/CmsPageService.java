@@ -311,4 +311,11 @@ public class CmsPageService {
         rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,cmsPage.getSiteId(),jsonString);
     }
 
+    public CmsPageResult save(CmsPage cmsPage) {
+        CmsPage cmsPage1 = cmsPageRepository.findByPageNameAndPageWebPathAndSiteId(cmsPage.getPageName(),cmsPage.getPageWebPath(),cmsPage.getSiteId());
+        if (cmsPage1 != null){
+            this.editCmsPage(cmsPage.getPageId(),cmsPage);
+        }
+        return this.addCmsPage(cmsPage);
+    }
 }

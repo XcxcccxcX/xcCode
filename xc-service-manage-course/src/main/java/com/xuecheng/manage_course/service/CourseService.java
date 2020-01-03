@@ -2,23 +2,29 @@ package com.xuecheng.manage_course.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.xuecheng.framework.domain.cms.CmsPage;
+import com.xuecheng.framework.domain.cms.response.CmsPageResult;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.CourseMarket;
 import com.xuecheng.framework.domain.course.CoursePic;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
+import com.xuecheng.framework.domain.course.ext.CourseView;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
+import com.xuecheng.framework.domain.course.response.CoursePublishResult;
 import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.QueryResult;
 import com.xuecheng.framework.model.response.ResponseResult;
+import com.xuecheng.manage_course.client.CmsPageClient;
 import com.xuecheng.manage_course.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -48,6 +54,22 @@ public class CourseService {
     CourseMarketRepository courseMarketRepository;
     @Autowired
     CoursePicRepository coursePicRepository;
+    @Autowired
+    CmsPageClient cmsPageClient;
+
+    @Value("${course-publish.dataUrlPre}")
+    private  String publish_dataUrlPre;
+    @Value("${course-publish.siteId}")
+    private  String publish_siteId;
+    @Value("${course-publish.templateId}")
+    private  String publish_templateId;
+    @Value("${course-publish.previewUrl}")
+    private  String publish_previewUrl;
+    @Value("${course-publish.pageWebPath}")
+    private  String publish_pageWebPath;
+    @Value("${course-publish.pagePhysicalPath}")
+    private  String publish_pagePhysicalPath;
+
 
     public TeachplanNode findTeachplanList(String courseId){
         return teachplanMapper.selectList(courseId);
@@ -154,7 +176,7 @@ public class CourseService {
             ExceptionCast.cast(CommonCode.INVALID_PARAM);
         }
         Optional<CourseBase> optionalCourseBase = courseBaseRepository.findById(courseBaseId);
-        if (! optionalCourseBase.isPresent()){
+        if (!optionalCourseBase.isPresent()){
             ExceptionCast.cast(CommonCode.FAIL);
         }
         CourseBase courseBase = optionalCourseBase.get();
@@ -204,7 +226,6 @@ public class CourseService {
         Optional<CourseMarket> courseMarketRepositoryById = courseMarketRepository.findById(courseId);
         if (!courseMarketRepositoryById.isPresent()){
             LOGGER.error("根据课程id 查询营销信息result 异常 courseId:{}",courseId);
-            ExceptionCast.cast(CommonCode.SEARCH_RESULTS_DO_NOT_EXIT);
             return null;
         }
         CourseMarket courseMarket = courseMarketRepositoryById.get();
@@ -266,5 +287,64 @@ public class CourseService {
             return coursePic;
         }
         return null;
+    }
+
+    /**
+     * 课程视图信息
+     * @param id
+     * @return
+     */
+    public CourseView courseViewById(String id) {
+        if (StringUtils.isEmpty(id)){
+            ExceptionCast.cast(CommonCode.INVALID_PARAM);
+        }
+        CourseView courseView = new CourseView();
+        //课程基本信息
+        CourseBase courseBase = this.getCourseBaseById(id);
+        if (courseBase!=null){
+            courseView.setCourseBase(courseBase);
+        }
+        //营销信息
+        CourseMarket courseMarket = this.getCourseMarketById(id);
+        if (courseMarket!=null){
+            courseView.setCourseMarket(courseMarket);
+        }
+        //课程计划信息
+        TeachplanNode teachplanNode = this.findTeachplanList(id);
+        if (teachplanNode!=null){
+            courseView.setTeachplanNode(teachplanNode);
+        }
+        return courseView;
+    }
+    public CourseBase findByBaseId(String courseId){
+        Optional<CourseBase> optionalCourseBase = courseBaseRepository.findById(courseId);
+        if (optionalCourseBase.isPresent()){
+            CourseBase courseBase = optionalCourseBase.get();
+            return courseBase;
+        }
+        ExceptionCast.cast(CommonCode.SEARCH_RESULTS_DO_NOT_EXIT);
+        return null;
+    };
+
+
+    public CoursePublishResult preview(String id) {
+        CmsPage cmsPage = new CmsPage();
+        CourseBase courseBase = this.findByBaseId(id);
+        cmsPage.setPageAliase(courseBase.getName());
+        cmsPage.setTemplateId(publish_templateId);
+        cmsPage.setSiteId(publish_siteId);
+        cmsPage.setDataUrl(publish_dataUrlPre+id);
+        cmsPage.setPageName(id+".html");
+        cmsPage.setPagePhysicalPath(publish_pagePhysicalPath);
+        cmsPage.setPageWebPath(publish_pageWebPath);
+
+        CmsPageResult cmsPageResult = cmsPageClient.saveCmsPage(cmsPage);
+        if (!cmsPageResult.isSuccess()){
+            return new CoursePublishResult(CommonCode.FAIL,null);
+        }
+        CmsPage cmsPage1  = cmsPageResult.getCmsPage();
+        String pageId = cmsPage1.getPageId();
+        String previewUrl = publish_previewUrl+pageId;
+        return new CoursePublishResult(CommonCode.SUCCESS,previewUrl);
     }
 }
