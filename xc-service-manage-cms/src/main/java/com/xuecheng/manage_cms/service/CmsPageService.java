@@ -5,10 +5,12 @@ import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.xuecheng.framework.domain.cms.CmsPage;
+import com.xuecheng.framework.domain.cms.CmsSite;
 import com.xuecheng.framework.domain.cms.CmsTemplate;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
 import com.xuecheng.framework.domain.cms.response.CmsCode;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
+import com.xuecheng.framework.domain.cms.response.CmsPostPageResult;
 import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
@@ -314,8 +316,44 @@ public class CmsPageService {
     public CmsPageResult save(CmsPage cmsPage) {
         CmsPage cmsPage1 = cmsPageRepository.findByPageNameAndPageWebPathAndSiteId(cmsPage.getPageName(),cmsPage.getPageWebPath(),cmsPage.getSiteId());
         if (cmsPage1 != null){
-            this.editCmsPage(cmsPage.getPageId(),cmsPage);
+           return this.editCmsPage(cmsPage1.getPageId(),cmsPage1);
         }
         return this.addCmsPage(cmsPage);
+    }
+
+    /**
+     * 一键发布页面
+     */
+    public CmsPostPageResult postPageQuick(CmsPage cmsPage) {
+        //将页面信息存储到cms_page 中
+        CmsPageResult cmsPageResult = this.save(cmsPage);
+        if (!cmsPageResult.isSuccess()){
+            ExceptionCast.cast(CommonCode.FAIL);
+        }
+        //获取页面id
+        CmsPage cmsPageSave = cmsPageResult.getCmsPage();
+        String pageId = cmsPageSave.getPageId();
+        //执行页面发布（先静态化，保存GridFs,向MQ发送消息）
+        ResponseResult responseResult = this.post(pageId);
+        if (!responseResult.isSuccess()){
+            ExceptionCast.cast(CommonCode.FAIL);
+        }
+        //拼接页面url
+        //取出站点id
+        String siteId = cmsPageSave.getSiteId();
+        CmsSite cmsSite = findSiteById(siteId);
+        String pageUrl = cmsSite.getSiteDomain()+cmsSite.getSiteWebPath()+cmsPageSave.getPageWebPath()+cmsPageSave.getPageName();
+        return new CmsPostPageResult(CommonCode.SUCCESS,pageUrl);
+    }
+
+    /**
+     *根据站点id 查询站点信息
+     */
+    private CmsSite findSiteById(String cmsSiteId){
+        Optional<CmsSite> optionalCmsSite = cmsSiteRepository.findById(cmsSiteId);
+        if (optionalCmsSite.isPresent()){
+           return optionalCmsSite.get();
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
+import com.xuecheng.framework.domain.cms.response.CmsPostPageResult;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.CourseMarket;
 import com.xuecheng.framework.domain.course.CoursePic;
@@ -345,6 +346,41 @@ public class CourseService {
         CmsPage cmsPage1  = cmsPageResult.getCmsPage();
         String pageId = cmsPage1.getPageId();
         String previewUrl = publish_previewUrl+pageId;
-        return new CoursePublishResult(CommonCode.SUCCESS,previewUrl);
+        CoursePublishResult coursePublishResult = new CoursePublishResult(CommonCode.SUCCESS,previewUrl);
+        return coursePublishResult;
+    }
+
+    @Transactional
+    public CoursePublishResult publish(String id) {
+        CourseBase courseBase = this.findByBaseId(id);
+
+        CmsPage cmsPage = new CmsPage();
+        cmsPage.setPageAliase(courseBase.getName());
+        cmsPage.setTemplateId(publish_templateId);
+        cmsPage.setSiteId(publish_siteId);
+        cmsPage.setDataUrl(publish_dataUrlPre+id);
+        cmsPage.setPageName(id+".html");
+        cmsPage.setPagePhysicalPath(publish_pagePhysicalPath);
+        cmsPage.setPageWebPath(publish_pageWebPath);
+        //调用一键发布
+        CmsPostPageResult cmsPostPageResult = cmsPageClient.postPageQuick(cmsPage);
+        if (!cmsPostPageResult.isSuccess()){
+            return new CoursePublishResult(CommonCode.FAIL,null);
+        }
+        //保存课程发布状态为已发布
+        CourseBase courseBase1 = this.saveCoursePublishState(id);
+        if (courseBase1 == null){
+            return new CoursePublishResult(CommonCode.FAIL,null);
+        }
+        String url = cmsPostPageResult.getPageUrl();
+        return new CoursePublishResult(CommonCode.SUCCESS,url);
+    }
+
+    //保存课程发布状态为已发布
+    private CourseBase saveCoursePublishState(String courseId){
+        CourseBase courseBase = this.findByBaseId(courseId);
+        courseBase.setStatus("202002");
+        courseBaseRepository.save(courseBase);
+        return courseBase;
     }
 }
